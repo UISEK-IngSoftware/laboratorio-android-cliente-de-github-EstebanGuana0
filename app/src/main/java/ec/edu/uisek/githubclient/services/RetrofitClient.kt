@@ -34,7 +34,7 @@ object RetrofitClient {
                 .build()
         } else {
             // Sin token, solo agregar el header Accept
-            Log.w(TAG, "⚠️ Token de GitHub NO configurado")
+            Log.w(TAG, "⚠️ Token de GitHub No configurado")
             originalRequest.newBuilder()
                 .addHeader("Accept", "application/vnd.github.v3+json")
                 .build()
