@@ -5,4 +5,6 @@
     <string name="repo_description">Descripcion del repositorio</string>
     <string name="repo_lang">Lenguaje</string>
     <string name="test_lang">Kotlin</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
 </resources>

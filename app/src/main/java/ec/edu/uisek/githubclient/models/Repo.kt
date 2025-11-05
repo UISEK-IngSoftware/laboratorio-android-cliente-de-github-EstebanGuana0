@@ -7,3 +7,8 @@ data class Repo (
     val language:String?,
     val owner:RepoOwner
 )
+
+data class RepoRequest (
+    val name:String,
+    val description:String,
+)
