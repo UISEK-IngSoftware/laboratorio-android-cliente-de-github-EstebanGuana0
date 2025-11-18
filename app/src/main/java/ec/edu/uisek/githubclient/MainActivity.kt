@@ -15,6 +15,9 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var reposAdapter: ReposAdapter
+    private val apiService: GithubApiService by lazy {
+        RetrofitClient.gitHubApiService
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,45 +29,38 @@ class MainActivity : AppCompatActivity() {
         binding.newRepoFab.setOnClickListener {
             displayNewRepoForm()
         }
-
-
     }
+
     override fun onResume() {
         super.onResume()
         fetchRepositories()
     }
+
     private fun setupRecyclerView() {
-        reposAdapter = ReposAdapter()
+        reposAdapter = ReposAdapter(onEditClick = {
+            displayEditRepoForm(it)
+        }, onDeleteClick = {
+            deleteRepository(it)
+        })
         binding.reposRecyclerView.adapter = reposAdapter
     }
 
-    private  fun fetchRepositories(){
-        val apiService : GithubApiService = RetrofitClient.gitHubApiService
+    private fun fetchRepositories() {
         val call = apiService.getRepos()
 
-        call.enqueue(object : Callback<List<Repo>>{
-            override fun onResponse(call: Call<List<Repo>?>, response: Response<List<Repo>?>) {
-                if(response.isSuccessful){
+        call.enqueue(object : Callback<List<Repo>> {
+            override fun onResponse(call: Call<List<Repo>>, response: Response<List<Repo>>) {
+                if (response.isSuccessful) {
                     val repos = response.body()
-                    if(repos !=null && repos.isNotEmpty()){
+                    if (repos != null && repos.isNotEmpty()) {
                         reposAdapter.updateRepositories(repos)
-                    } else{
+                    } else {
                         showMessage("No se encontraron repositorios")
                     }
-
-                }else{
-                    val errorMessage = when(response.code()){
-                        401 -> "No autorizado"
-                        403 -> "Prohibido"
-                        404 -> "No encontrado"
-                        else -> "Error ${response.code()}"
-                    }
-                    showMessage("Error: $errorMessage")
-
-                    }
+                } else {
+                    handleApiError(response.code())
                 }
-
-
+            }
 
             override fun onFailure(call: Call<List<Repo>>, t: Throwable) {
                 showMessage("No se pudieron cargar repositorios")
@@ -72,14 +68,49 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(this,message, Toast.LENGTH_SHORT).show()
+    private fun deleteRepository(repo: Repo) {
+        val call = apiService.deleteRepo(repo.owner.login, repo.name)
+        call.enqueue(object : Callback<Unit> {
+            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                if (response.isSuccessful) {
+                    showMessage("Repositorio eliminado exitosamente")
+                    fetchRepositories() // Refresh the list
+                } else {
+                    handleApiError(response.code())
+                }
+            }
+
+            override fun onFailure(call: Call<Unit>, t: Throwable) {
+                showMessage("Error al eliminar el repositorio: ${t.message}")
+            }
+        })
     }
 
-    private fun displayNewRepoForm(){
-        Intent(this,RepoForm::class.java).apply {
+    private fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun displayNewRepoForm() {
+        Intent(this, RepoForm::class.java).apply {
             startActivity(this)
         }
     }
 
+    private fun displayEditRepoForm(repo: Repo) {
+        Intent(this, RepoForm::class.java).apply {
+            putExtra("repo_name", repo.name)
+            putExtra("repo_description", repo.description)
+            startActivity(this)
+        }
+    }
+
+    private fun handleApiError(code: Int) {
+        val errorMessage = when (code) {
+            401 -> "No autorizado"
+            403 -> "Prohibido"
+            404 -> "No encontrado"
+            else -> "Error $code"
+        }
+        showMessage("Error: $errorMessage")
+    }
 }
