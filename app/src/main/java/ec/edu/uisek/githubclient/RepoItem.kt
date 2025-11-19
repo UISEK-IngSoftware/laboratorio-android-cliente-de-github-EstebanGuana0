@@ -34,6 +34,7 @@ class RepoItem : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Vista de ejemplo, la lógica real está en ReposAdapter
         binding.repoName.text = "Mi repositorio "
         binding.repoDescription.text ="Esta es la descripcion del repositorio"
     }

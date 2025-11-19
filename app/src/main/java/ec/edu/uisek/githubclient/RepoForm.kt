@@ -27,11 +27,12 @@ class RepoForm : AppCompatActivity() {
         binding = ActivityRepoFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Verifica si se reciben datos para editar
         repoName = intent.getStringExtra("repo_name")
 
         if (repoName != null) {
             binding.repoNameInput.setText(repoName)
-            binding.repoNameInput.isEnabled = false // Cannot edit repo name
+            binding.repoNameInput.isEnabled = false // Bloquea edición del nombre
             binding.RepoDescriptionInput.setText(intent.getStringExtra("repo_description"))
         }
 
@@ -40,6 +41,7 @@ class RepoForm : AppCompatActivity() {
         }
 
         binding.saveButton.setOnClickListener {
+            // Decide si crear o actualizar según si existe repoName
             if (repoName != null) {
                 updateRepo()
             } else {
@@ -91,8 +93,8 @@ class RepoForm : AppCompatActivity() {
             return
         }
         val repoDescription = binding.RepoDescriptionInput.text.toString().trim()
-        val repoRequest = RepoRequest(repoName!!, repoDescription) // Name is not updated
-        // TODO: Get owner from a reliable source instead of hardcoding
+        val repoRequest = RepoRequest(repoName!!, repoDescription)
+        // API call para actualizar repositorio
         val call = apiService.updateRepo("EstebanGuana0", repoName!!, repoRequest)
 
         call.enqueue(object : Callback<Repo> {

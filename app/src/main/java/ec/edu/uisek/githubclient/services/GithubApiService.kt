@@ -23,6 +23,7 @@ interface GithubApiService {
          @Body repoRequest: RepoRequest
      )  :Call<Repo>
 
+    // Actualiza un repositorio existente.
     @PATCH("repos/{owner}/{repo}")
     fun updateRepo(
         @Path("owner") owner: String,
@@ -30,6 +31,7 @@ interface GithubApiService {
         @Body repoRequest: RepoRequest
     ): Call<Repo>
 
+    // Elimina un repositorio.
     @DELETE("repos/{owner}/{repo}")
     fun deleteRepo(
         @Path("owner") owner: String,

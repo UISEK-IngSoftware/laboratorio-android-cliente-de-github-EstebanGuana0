@@ -14,6 +14,8 @@ class ReposViewHolder(private val binding: FragmentRepoItemBinding) :
             binding.repoName.text = repo.name
             binding.repoDescription.text = repo.description
             binding.repoLang.text = repo.language
+            
+            // Carga imagen con Glide
             Glide.with(binding.root.context)
                 .load(repo.owner.avatarUrl)
                 .placeholder(R.mipmap.ic_launcher)
@@ -21,6 +23,7 @@ class ReposViewHolder(private val binding: FragmentRepoItemBinding) :
                 .circleCrop()
                 .into(binding.repoOwnerImage)
 
+            // Listeners para botones de editar y borrar
             binding.editRepoButton.setOnClickListener { onEditClick(repo) }
             binding.deleteRepoButton.setOnClickListener { onDeleteClick(repo) }
         }
@@ -52,7 +55,6 @@ class ReposAdapter(
 
     fun updateRepositories(newRepositories: List<Repo>){
             repositories = newRepositories
-            notifyDataSetChanged()
-
+            notifyDataSetChanged() // Refresca la lista
     }
 }

@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
+        // Configura Adapter pasando lambdas para manejar clics de editar y borrar
         reposAdapter = ReposAdapter(onEditClick = {
             displayEditRepoForm(it)
         }, onDeleteClick = {
@@ -69,12 +70,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun deleteRepository(repo: Repo) {
+        // API DELETE: Borra el repositorio remoto usando owner y nombre
         val call = apiService.deleteRepo(repo.owner.login, repo.name)
         call.enqueue(object : Callback<Unit> {
             override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                 if (response.isSuccessful) {
                     showMessage("Repositorio eliminado exitosamente")
-                    fetchRepositories() // Refresh the list
+                    fetchRepositories() // Recarga la lista para reflejar cambios
                 } else {
                     handleApiError(response.code())
                 }
@@ -97,6 +99,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displayEditRepoForm(repo: Repo) {
+        // Abre el formulario enviando datos existentes (Modo Edición)
         Intent(this, RepoForm::class.java).apply {
             putExtra("repo_name", repo.name)
             putExtra("repo_description", repo.description)
