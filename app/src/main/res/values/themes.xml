@@ -2,7 +2,8 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.GithubClient" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <item name="colorPrimary">@color/uisek</item> >
+        <item name="colorPrimary">@color/uisek</item>
+        >
     </style>
 
     <style name="Theme.GithubClient" parent="Base.Theme.GithubClient" />

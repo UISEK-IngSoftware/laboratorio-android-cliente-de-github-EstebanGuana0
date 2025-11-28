@@ -7,4 +7,14 @@
     <string name="test_lang">Kotlin</string>
     <string name="cancel">Cancelar</string>
     <string name="save">Guardar</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <!--Strings para la pantalla de login -->
+    <string name="user">Usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Iniciar Sesión</string>
+
 </resources>
