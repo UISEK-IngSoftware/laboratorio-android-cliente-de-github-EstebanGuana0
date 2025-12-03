@@ -44,5 +44,9 @@ object RetrofitClient {
         return apiService ?: throw IllegalStateException("El cliente retrofit no pudo inicializarse")
 
     }
+    
+    fun clearService() {
+        apiService = null
+    }
 
 }

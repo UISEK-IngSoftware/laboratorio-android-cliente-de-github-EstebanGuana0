@@ -8,6 +8,7 @@ import ec.edu.uisek.githubclient.databinding.ActivityMainBinding
 import ec.edu.uisek.githubclient.models.Repo
 import ec.edu.uisek.githubclient.services.GithubApiService
 import ec.edu.uisek.githubclient.services.RetrofitClient
+import ec.edu.uisek.githubclient.services.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -18,16 +19,22 @@ class MainActivity : AppCompatActivity() {
     private val apiService: GithubApiService by lazy {
         RetrofitClient.getApiService()
     }
+    private lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        sessionManager = SessionManager(this)
 
         setupRecyclerView()
         binding.newRepoFab.setOnClickListener {
             displayNewRepoForm()
+        }
+
+        binding.logoutButton.setOnClickListener {
+            logoutUser()
         }
     }
 
@@ -47,26 +54,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchRepositories() {
-        val call = apiService.getRepos()
+        // Check if API service is available, if not try to recreate it from session or redirect to login
+        try {
+             val call = apiService.getRepos()
 
-        call.enqueue(object : Callback<List<Repo>> {
-            override fun onResponse(call: Call<List<Repo>>, response: Response<List<Repo>>) {
-                if (response.isSuccessful) {
-                    val repos = response.body()
-                    if (repos != null && repos.isNotEmpty()) {
-                        reposAdapter.updateRepositories(repos)
+            call.enqueue(object : Callback<List<Repo>> {
+                override fun onResponse(call: Call<List<Repo>>, response: Response<List<Repo>>) {
+                    if (response.isSuccessful) {
+                        val repos = response.body()
+                        if (repos != null && repos.isNotEmpty()) {
+                            reposAdapter.updateRepositories(repos)
+                        } else {
+                            showMessage("No se encontraron repositorios")
+                        }
                     } else {
-                        showMessage("No se encontraron repositorios")
+                        handleApiError(response.code())
                     }
-                } else {
-                    handleApiError(response.code())
                 }
-            }
 
-            override fun onFailure(call: Call<List<Repo>>, t: Throwable) {
-                showMessage("No se pudieron cargar repositorios")
+                override fun onFailure(call: Call<List<Repo>>, t: Throwable) {
+                    showMessage("No se pudieron cargar repositorios")
+                }
+            })
+        } catch (e: Exception) {
+             // If we can't get the API service, check credentials
+            val credentials = sessionManager.getCredentials()
+            if (credentials != null) {
+                RetrofitClient.createAuthenticadedService(credentials.username, credentials.password)
+                 // Retry fetch (this assumes createAuthenticatedService sets the singleton properly for getApiService() to work on next call)
+                 // However, apiService is initialized by lazy, so it might already hold the exception or null. 
+                 // Better to just redirect to login if something is fundamentally wrong or re-initialize.
+                 // Since apiService is lazy, let's rely on proper flow. If we are here, we might need to restart activity or similar, 
+                 // but usually LoginActivity sets it up.
+                 // For now, if it fails, let's just redirect to login to be safe.
+                 logoutUser()
+            } else {
+                logoutUser()
             }
-        })
+        }
+       
     }
 
     private fun deleteRepository(repo: Repo) {
@@ -115,5 +141,14 @@ class MainActivity : AppCompatActivity() {
             else -> "Error $code"
         }
         showMessage("Error: $errorMessage")
+    }
+
+    private fun logoutUser() {
+        sessionManager.clearCredentoials()
+        RetrofitClient.clearService()
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
